@@ -1,0 +1,35 @@
+mysql -u root -p
+
+show databases;
+
+use databasename;
+
+mysql> use myflaskapp
+Database changed
+mysql> create table users(id INT(11) AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(100),
+email VARCHAR(100),
+username VARCHAR(30),
+password VARCHAR(100),
+register_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+
+show tables;
+
+describe users;
+
+flask mysqldb needs to be installed as its used to communicate to the db(mysql)
+"pip install flask-mysqldb"
+
+also install wtf for form validation
+"pip install flask-wtf"
+
+install passlib which will help hash our passwords
+"pip install passlib"
+
+from flask import Flask, render_template, url for, session, logging
+
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+
+from passlib.hash import sha256_crypt
+
+from flask_mysqldb install MySQL
