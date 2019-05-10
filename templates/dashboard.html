@@ -3,27 +3,29 @@
 {% block body %}
 
 <h1>Dashboard<small> Welcome {{session['username']}}</small></h1>
-<button type="button" class="btn btn-secondary"><a href="addarticle">Add Article</a></button>
-<table class="table table-striped">
-  <tr>
-    <th>Id</th>
-    <th>Title</th>
-    <th>Author</th>
-    <th>Date</th>
-    <th></th>
-    <th></th>
-  </tr>
-  {% for article in articles %}
+
+  <button type="button" class="btn btn-secondary"><a href="addarticle">Add Article</a></button>
+
+  <table class="table table-striped">
     <tr>
-      <td>{{article.id}}</td>
-      <td>{{article.title}}</td>
-      <td>{{article.author}}</td>
-      <td>{{article.create_date}}</td>
+      <th>Id</th>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Date</th>
+      <th></th>
+      <th></th>
     </tr>
-  {% endfor %}
-</table>
+    {% for article in articles %}
+      <tr>
+        <td>{{article.id}}</td>
+        <td>{{article.title}}</td>
+        <td>{{article.author}}</td>
+        <td>{{article.create_date}}</td>
+        <td><a class="btn btn-primary btn-sm float-right" href="#" role="button">Edit</a></td>
+        <td><a class="btn btn-danger btn-sm" href="#" role="button">Delete</a></td>
+      </tr>
 
-
-
+    {% endfor %}
+  </table>
 
 {% endblock %}

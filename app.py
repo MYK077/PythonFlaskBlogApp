@@ -38,12 +38,27 @@ def about():
 # article
 @app.route("/articles")
 def articles():
-    return render_template("articles.html",articles = Articles)
+    if 'username' in session:
+        cur = mysql.connection.cursor()
+        res = cur.execute("select * from articles")
+        articles = cur.fetchall()
+        cur.close()
+        if res > 0:
+            return render_template("articles.html",articles = articles)
+    else:
+        flash("you are not logged in please login","success")
+        return render_template("login.html")
 
 #Single Article
 @app.route("/article/<string:id>")
 def article(id):
-    return render_template("article.html",id = id)
+    cur = mysql.connection.cursor()
+    res = cur.execute("select * from articles where id = %s",(id))
+    article = cur.fetchone()
+    cur.close()
+    if res > 0:
+        return render_template("article.html",article = article)
+    return render_template("login.html")
 
 # Register form class
 # http://flask.pocoo.org/docs/1.0/patterns/wtforms/
@@ -129,7 +144,7 @@ def dashboard():
         articles = cur.fetchall()
         if res > 0:
                 return render_template('dashboard.html', articles = articles)
-        return render_template('dashboard.html',username = session['username'])
+        return render_template('dashboard.html')
     else:
         flash('unauthorized,please log in','danger')
         return redirect(url_for('login'))
@@ -140,7 +155,7 @@ class AddArticle(Form):
     title = StringField('Article Title', [validators.Length(min=6, max=100)])
     body = TextAreaField('Content', [validators.DataRequired(),validators.Length(min=30)])
 
-
+# adding the article
 @app.route('/addarticle', methods=['GET','POST'])
 def addarticle():
     form = AddArticle(request.form)
@@ -155,6 +170,11 @@ def addarticle():
         flash("Article created","success")
         return redirect(url_for("dashboard"))
     return render_template('addarticle.html',form=form)
+
+
+# @app.route("edit_arcticle/<sting:id>")
+# def edit_arcticle(id):
+
 
 
     # if 'username' in session:
