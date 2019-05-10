@@ -124,6 +124,11 @@ def logout():
 @app.route('/dashboard')
 def dashboard():
     if 'username' in session:
+        cur = mysql.connection.cursor();
+        res = cur.execute("select * from articles")
+        articles = cur.fetchall()
+        if res > 0:
+                return render_template('dashboard.html', articles = articles)
         return render_template('dashboard.html',username = session['username'])
     else:
         flash('unauthorized,please log in','danger')
@@ -138,7 +143,6 @@ class AddArticle(Form):
 
 @app.route('/addarticle', methods=['GET','POST'])
 def addarticle():
-    app.logger.info(session['username'])
     form = AddArticle(request.form)
     # author = session['username']
     if request.method == "POST" and form.validate():
@@ -148,6 +152,8 @@ def addarticle():
         cur.execute("INSERT INTO articles(author, title, body)VALUES(%s, %s, %s)", (session['username'],title,body))
         mysql.connection.commit()
         cur.close()
+        flash("Article created","success")
+        return redirect(url_for("dashboard"))
     return render_template('addarticle.html',form=form)
 
 

@@ -2,8 +2,28 @@
 
 {% block body %}
 
-<h1>Dashboard<small> Welcome {{username}}</small></h1>
-<button type="button" class="btn btn-secondary"><a href="addarticle">Add Article</button></a>
+<h1>Dashboard<small> Welcome {{session['username']}}</small></h1>
+<button type="button" class="btn btn-secondary"><a href="addarticle">Add Article</a></button>
+<table class="table table-striped">
+  <tr>
+    <th>Id</th>
+    <th>Title</th>
+    <th>Author</th>
+    <th>Date</th>
+    <th></th>
+    <th></th>
+  </tr>
+  {% for article in articles %}
+    <tr>
+      <td>{{article.id}}</td>
+      <td>{{article.title}}</td>
+      <td>{{article.author}}</td>
+      <td>{{article.create_date}}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+
 
 
 {% endblock %}
