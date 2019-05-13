@@ -9,6 +9,8 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 
 from passlib.hash import sha256_crypt
 
+from functools import wraps
+
 # creating instance of class Flask
 app = Flask(__name__)
 
@@ -24,6 +26,15 @@ app.config['MYSQL_CURSORCLASS']= 'DictCursor'
 mysql = MySQL(app)
 
 Articles = Articles()
+
+# creating login decorator:
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        return redirect(url_for('login', next=request.url))
+    return decorated_function
 
 # Index
 @app.route("/")
@@ -53,7 +64,7 @@ def articles():
 @app.route("/article/<string:id>")
 def article(id):
     cur = mysql.connection.cursor()
-    res = cur.execute("select * from articles where id = %s",(id))
+    res = cur.execute("select * from articles where id = %s",[id])
     article = cur.fetchone()
     cur.close()
     if res > 0:
@@ -86,7 +97,7 @@ def register():
         password = sha256_crypt.encrypt(str(form.password.data))
         # create cursor
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO users(name, email, username, password)VALUES(%s, %s, %s, %s)", (name, email, username, password))
+        cur.execute("INSERT INTO users(name, email, username, password)VALUES(%s, %s, %s, %s)", [name, email, username, password])
 
         # Commit to DB
         mysql.connection.commit()
@@ -137,17 +148,18 @@ def logout():
 
 # Dashboard
 @app.route('/dashboard')
+@login_required
 def dashboard():
-    if 'username' in session:
-        cur = mysql.connection.cursor();
-        res = cur.execute("select * from articles")
-        articles = cur.fetchall()
-        if res > 0:
-                return render_template('dashboard.html', articles = articles)
-        return render_template('dashboard.html')
-    else:
-        flash('unauthorized,please log in','danger')
-        return redirect(url_for('login'))
+    # if 'username' in session:
+    cur = mysql.connection.cursor();
+    res = cur.execute("select * from articles where author = %s",[session['username']])
+    articles = cur.fetchall()
+    if res > 0:
+            return render_template('dashboard.html', articles = articles)
+    return render_template('dashboard.html')
+    # else:
+    flash('unauthorized,please log in','danger')
+    return redirect(url_for('login'))
 
 # adding wtf form class to add article:
 class AddArticle(Form):
@@ -157,6 +169,7 @@ class AddArticle(Form):
 
 # adding the article
 @app.route('/addarticle', methods=['GET','POST'])
+@login_required
 def addarticle():
     form = AddArticle(request.form)
     # author = session['username']
@@ -164,7 +177,7 @@ def addarticle():
         title = form.title.data
         body = form.body.data
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO articles(author, title, body)VALUES(%s, %s, %s)", (session['username'],title,body))
+        cur.execute("INSERT INTO articles(author, title, body)VALUES(%s, %s, %s)", [session['username'],title,body])
         mysql.connection.commit()
         cur.close()
         flash("Article created","success")
@@ -172,8 +185,39 @@ def addarticle():
     return render_template('addarticle.html',form=form)
 
 
-# @app.route("edit_arcticle/<sting:id>")
-# def edit_arcticle(id):
+@app.route("/edit_article/<string:id>",methods =['GET','POST'])
+@login_required
+def edit_article(id):
+    cur = mysql.connection.cursor()
+    res = cur.execute("select * from articles where id =%s",[id])
+    article = cur.fetchone()
+    cur.close()
+    # get the form and place the values fetched from database
+    form = AddArticle(request.form)
+    form.title.data = article['title']
+    form.body.data = article['body']
+
+    if request.method == "POST" and form.validate():
+        title = request.form['title']
+        body = request.form['body']
+        cur = mysql.connection.cursor()
+        cur.execute("update articles set title = %s , body = %s where id = %s ",[title,body,id])
+        #commit to DB
+        mysql.connection.commit()
+        # close connection
+        cur.close()
+        flash("article is created","success")
+        return redirect(url_for('dashboard'))
+    return render_template('edit_article.html',form = form)
+
+@app.route("/delete_article/<string:id>",methods=['POST'])
+@login_required
+def delete_article(id):
+    cur = mysql.connection.cursor()
+    cur.execute("delete from articles where id = %s",[id])
+    mysql.connection.commit()
+    cur.close()
+    return redirect(url_for("dashboard"))
 
 
 
