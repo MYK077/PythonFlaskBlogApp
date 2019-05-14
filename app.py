@@ -62,6 +62,7 @@ def articles():
 
 #Single Article
 @app.route("/article/<string:id>")
+@login_required
 def article(id):
     cur = mysql.connection.cursor()
     res = cur.execute("select * from articles where id = %s",[id])
@@ -97,14 +98,24 @@ def register():
         password = sha256_crypt.encrypt(str(form.password.data))
         # create cursor
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO users(name, email, username, password)VALUES(%s, %s, %s, %s)", [name, email, username, password])
+        # verify if the username already exists
+        check_username = cur.execute("select * from users where username = %s",[username])
+        check_email = cur.execute("select * from users where email = %s",[email])
+        if check_username == 0 and check_email == 0:
+            cur.execute("INSERT INTO users(name, email, username, password)VALUES(%s, %s, %s, %s)", [name, email, username, password])
+            # Commit to DB
+            mysql.connection.commit()
+            # Close connection
+            cur.close();
+            flash('Thanks for registering','success')
+            return redirect(url_for('login'))
+        else:
+            cur.close()
+            flash("username or email already exists", "danger")
+            return render_template('register.html', form=form)
 
-        # Commit to DB
-        mysql.connection.commit()
-        # Close connection
-        cur.close();
-        flash('Thanks for registering','success')
-        return redirect(url_for('login'))
+
+
     return render_template('register.html', form=form)
 
 # User Login
