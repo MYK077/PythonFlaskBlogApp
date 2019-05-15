@@ -11,6 +11,9 @@ from passlib.hash import sha256_crypt
 
 from functools import wraps
 
+# for pagination to work
+from flask_paginate import Pagination, get_page_args
+
 # creating instance of class Flask
 app = Flask(__name__)
 
@@ -55,7 +58,7 @@ def articles():
         articles = cur.fetchall()
         cur.close()
         if res > 0:
-            return render_template("articles.html",articles = articles)
+            return render_template("articles.html",articles=articles)
     else:
         flash("you are not logged in please login","success")
         return render_template("login.html")
