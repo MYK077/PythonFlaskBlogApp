@@ -62,6 +62,25 @@ def articles():
     else:
         flash("you are not logged in please login","success")
         return render_template("login.html")
+# route to search and display search results
+@app.route("/articles/search", methods = ['GET','POST'])
+@login_required
+def search():
+    if request.method == 'POST':
+        title = request.form['title']
+        cur = mysql.connection.cursor()
+        # this query will enable the full text search in mysql
+        cur.execute("alter table articles add fulltext(title)")
+        res = cur.execute("select * from articles where match(title) against(%s)",[title])
+        articles = cur.fetchall()
+        cur.close()
+        if res > 0:
+            return render_template("articles.html",articles=articles)
+        else:
+            flash("sorry no results found","danger")
+            return render_template("articles.html",articles=articles)
+    return "st"
+
 
 #Single Article
 @app.route("/article/<string:id>")

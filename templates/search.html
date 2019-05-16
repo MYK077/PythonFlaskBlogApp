@@ -2,19 +2,18 @@
 
 {%block body%}
 
-<div class="search-container float-right">
+<div class="search-container">
   <form action="/articles/search" method="POST">
     <input type="text" placeholder="Search.." name="title" value={{request.form.title}}>
     <button type="submit"><i class="fa fa-search"></i></button>
   </form>
 </div>
-
- <h1>Articles</h1>
+ <h1>Search results for articles</h1>
   <ul class="list-group">
   {% for article in articles %}
     <li class="list-group-item"><a href="article/{{article.id}}">{{article.title}}</a> </li>
   {% endfor %}
-</ul>
+ </ul>
 <nav aria-label="Page navigation example">
   <ul class="pagination">
     <li class="page-item"><a class="page-link" href="#">Previous</a></li>

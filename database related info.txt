@@ -36,3 +36,15 @@ from flask_mysqldb install MySQL
 
 pip install flask_paginate
 from flask_paginate import Pagination and get_page_args
+
+Note:The below is the command to change the database engine for table articles, For MySQL 5.5 and later, the default storage engine is InnoDB. But
+to enable fulltext seacrh we need to change it to MyISAM because currently InnoDB does not support full text search:
+
+mysql> ALTER TABLE articles ENGINE = MyISAM;
+Query OK, 10 rows affected (0.05 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+Below is the command to enable full text search in the table:
+mysql> alter table articles add fulltext(title);
+Query OK, 10 rows affected (0.05 sec)
+Records: 10  Duplicates: 0  Warnings: 0
